@@ -1,28 +1,31 @@
-import { useEffect, useState } from 'react';
-import { loadAsync, isLoaded } from './Font';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.useFonts = void 0;
+const react_1 = require("react");
+const Font_1 = require("./Font");
 function isMapLoaded(map) {
     if (typeof map === 'string') {
-        return isLoaded(map);
+        return (0, Font_1.isLoaded)(map);
     }
     else {
-        return Object.keys(map).every((fontFamily) => isLoaded(fontFamily));
+        return Object.keys(map).every((fontFamily) => (0, Font_1.isLoaded)(fontFamily));
     }
 }
 function useRuntimeFonts(map) {
-    const [loaded, setLoaded] = useState(
+    const [loaded, setLoaded] = (0, react_1.useState)(
     // For web rehydration, we need to check if the fonts are already loaded during the static render.
     // Native will also benefit from this optimization.
     isMapLoaded(map));
-    const [error, setError] = useState(null);
-    useEffect(() => {
-        loadAsync(map)
+    const [error, setError] = (0, react_1.useState)(null);
+    (0, react_1.useEffect)(() => {
+        (0, Font_1.loadAsync)(map)
             .then(() => setLoaded(true))
             .catch(setError);
     }, []);
     return [loaded, error];
 }
 function useStaticFonts(map) {
-    loadAsync(map);
+    (0, Font_1.loadAsync)(map);
     return [true, null];
 }
 // @needsAudit
@@ -45,5 +48,5 @@ function useStaticFonts(map) {
  * const [loaded, error] = useFonts({ ... });
  * ```
  */
-export const useFonts = typeof window === 'undefined' ? useStaticFonts : useRuntimeFonts;
+exports.useFonts = typeof window === 'undefined' ? useStaticFonts : useRuntimeFonts;
 //# sourceMappingURL=FontHooks.js.map

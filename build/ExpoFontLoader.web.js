@@ -1,8 +1,14 @@
-import { CodedError, Platform } from 'expo-modules-core';
-import FontObserver from 'fontfaceobserver';
-import { FontDisplay } from './Font.types';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports._createWebFontTemplate = _createWebFontTemplate;
+const expo_modules_core_1 = require("expo-modules-core");
+const fontfaceobserver_1 = __importDefault(require("fontfaceobserver"));
+const Font_types_1 = require("./Font.types");
 function getFontFaceStyleSheet() {
-    if (!Platform.isDOMAvailable) {
+    if (!expo_modules_core_1.Platform.isDOMAvailable) {
         return null;
     }
     const styleSheet = getStyleElement();
@@ -56,9 +62,9 @@ function getHeadElements() {
         })),
     ];
 }
-export default {
+exports.default = {
     async unloadAllAsync() {
-        if (!Platform.isDOMAvailable)
+        if (!expo_modules_core_1.Platform.isDOMAvailable)
             return;
         const element = document.getElementById(ID);
         if (element && element instanceof HTMLStyleElement) {
@@ -120,7 +126,7 @@ export default {
         }
         const canInjectStyle = document.head && typeof document.head.appendChild === 'function';
         if (!canInjectStyle) {
-            throw new CodedError('ERR_WEB_ENVIRONMENT', `The browser's \`document.head\` element doesn't support injecting fonts.`);
+            throw new expo_modules_core_1.CodedError('ERR_WEB_ENVIRONMENT', `The browser's \`document.head\` element doesn't support injecting fonts.`);
         }
         const style = getStyleElement();
         document.head.appendChild(style);
@@ -131,7 +137,7 @@ export default {
         if (!isFontLoadingListenerSupported()) {
             return Promise.resolve();
         }
-        return new FontObserver(fontFamilyName, { display: resource.display }).load(null, 6000);
+        return new fontfaceobserver_1.default(fontFamilyName, { display: resource.display }).load(null, 6000);
     },
 };
 const ID = 'expo-generated-fonts';
@@ -145,8 +151,8 @@ function getStyleElement() {
     styleElement.type = 'text/css';
     return styleElement;
 }
-export function _createWebFontTemplate(fontFamily, resource) {
-    return `@font-face{font-family:${fontFamily};src:url(${resource.uri});font-display:${resource.display || FontDisplay.AUTO}}`;
+function _createWebFontTemplate(fontFamily, resource) {
+    return `@font-face{font-family:${fontFamily};src:url(${resource.uri});font-display:${resource.display || Font_types_1.FontDisplay.AUTO}}`;
 }
 function _createWebStyle(fontFamily, resource) {
     const fontStyle = _createWebFontTemplate(fontFamily, resource);

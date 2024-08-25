@@ -1,29 +1,40 @@
-import ExpoFontLoader from './ExpoFontLoader';
-export const loadPromises = {};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.loadPromises = void 0;
+exports.markLoaded = markLoaded;
+exports.isLoadedInCache = isLoadedInCache;
+exports.isLoadedNative = isLoadedNative;
+exports.purgeFontFamilyFromCache = purgeFontFamilyFromCache;
+exports.purgeCache = purgeCache;
+const ExpoFontLoader_1 = __importDefault(require("./ExpoFontLoader"));
+exports.loadPromises = {};
 // cache the value on the js side for fast access to the fonts that are loaded
 let cache = {};
-export function markLoaded(fontFamily) {
+function markLoaded(fontFamily) {
     cache[fontFamily] = true;
 }
-export function isLoadedInCache(fontFamily) {
+function isLoadedInCache(fontFamily) {
     return fontFamily in cache;
 }
-export function isLoadedNative(fontFamily) {
+function isLoadedNative(fontFamily) {
     if (isLoadedInCache(fontFamily)) {
         return true;
     }
     else {
-        const loadedNativeFonts = ExpoFontLoader.getLoadedFonts();
+        const loadedNativeFonts = ExpoFontLoader_1.default.getLoadedFonts();
         loadedNativeFonts.forEach((font) => {
             cache[font] = true;
         });
         return fontFamily in cache;
     }
 }
-export function purgeFontFamilyFromCache(fontFamily) {
+function purgeFontFamilyFromCache(fontFamily) {
     delete cache[fontFamily];
 }
-export function purgeCache() {
+function purgeCache() {
     cache = {};
 }
 //# sourceMappingURL=memory.js.map

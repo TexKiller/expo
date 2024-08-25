@@ -1,15 +1,22 @@
-import { Asset } from 'expo-asset';
-import { CodedError } from 'expo-modules-core';
-import ExpoFontLoader from './ExpoFontLoader';
-export function getAssetForSource(source) {
-    if (source instanceof Asset) {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAssetForSource = getAssetForSource;
+exports.loadSingleFontAsync = loadSingleFontAsync;
+const expo_asset_1 = require("expo-asset");
+const expo_modules_core_1 = require("expo-modules-core");
+const ExpoFontLoader_1 = __importDefault(require("./ExpoFontLoader"));
+function getAssetForSource(source) {
+    if (source instanceof expo_asset_1.Asset) {
         return source;
     }
     if (typeof source === 'string') {
-        return Asset.fromURI(source);
+        return expo_asset_1.Asset.fromURI(source);
     }
     else if (typeof source === 'number') {
-        return Asset.fromModule(source);
+        return expo_asset_1.Asset.fromModule(source);
     }
     else if (typeof source === 'object' && typeof source.uri !== 'undefined') {
         return getAssetForSource(source.uri);
@@ -19,15 +26,15 @@ export function getAssetForSource(source) {
     // or returned Asset.fromModule if isWeb.
     return source;
 }
-export async function loadSingleFontAsync(name, input) {
+async function loadSingleFontAsync(name, input) {
     const asset = input;
     if (!asset.downloadAsync) {
-        throw new CodedError(`ERR_FONT_SOURCE`, '`loadSingleFontAsync` expected resource of type `Asset` from expo-asset on native');
+        throw new expo_modules_core_1.CodedError(`ERR_FONT_SOURCE`, '`loadSingleFontAsync` expected resource of type `Asset` from expo-asset on native');
     }
     await asset.downloadAsync();
     if (!asset.downloaded) {
-        throw new CodedError(`ERR_DOWNLOAD`, `Failed to download asset for font "${name}"`);
+        throw new expo_modules_core_1.CodedError(`ERR_DOWNLOAD`, `Failed to download asset for font "${name}"`);
     }
-    await ExpoFontLoader.loadAsync(name, asset.localUri);
+    await ExpoFontLoader_1.default.loadAsync(name, asset.localUri);
 }
 //# sourceMappingURL=FontLoader.js.map

@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FontDisplay = void 0;
 // @needsAudit
 /**
  * Sets the [font-display](https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display)
@@ -9,7 +12,7 @@
  * value based on the element it's used in.
  * @platform web
  */
-export var FontDisplay;
+var FontDisplay;
 (function (FontDisplay) {
     /**
      * __(Default)__ The font display strategy is defined by the user agent or platform.
@@ -40,5 +43,5 @@ export var FontDisplay;
      * decide to load the font based on slow connection speed or critical resource demand.
      */
     FontDisplay["OPTIONAL"] = "optional";
-})(FontDisplay || (FontDisplay = {}));
+})(FontDisplay || (exports.FontDisplay = FontDisplay = {}));
 //# sourceMappingURL=Font.types.js.map
