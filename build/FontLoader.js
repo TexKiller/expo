@@ -10,11 +10,12 @@ exports.getNativeFontName = getNativeFontName;
 const expo_asset_1 = require("expo-asset");
 const expo_constants_1 = __importDefault(require("expo-constants"));
 const expo_modules_core_1 = require("expo-modules-core");
+const react_native_1 = require("react-native");
 const ExpoFontLoader_1 = __importDefault(require("./ExpoFontLoader"));
-const isInExpoGo = expo_constants_1.default.appOwnership === 'expo';
+const isInClient = expo_constants_1.default.appOwnership === 'expo';
+const isInIOSStandalone = expo_constants_1.default.appOwnership === 'standalone' && react_native_1.Platform.OS === 'ios';
 function fontFamilyNeedsScoping(name) {
-    return (isInExpoGo &&
-        expo_modules_core_1.Platform.OS !== 'ios' &&
+    return ((isInClient || isInIOSStandalone) &&
         !expo_constants_1.default.systemFonts.includes(name) &&
         name !== 'System' &&
         !name.includes(expo_constants_1.default.sessionId));

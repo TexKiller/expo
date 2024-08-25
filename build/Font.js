@@ -15,8 +15,8 @@ const ExpoFontLoader_1 = __importDefault(require("./ExpoFontLoader"));
 const Font_types_1 = require("./Font.types");
 Object.defineProperty(exports, "FontDisplay", { enumerable: true, get: function () { return Font_types_1.FontDisplay; } });
 const FontLoader_1 = require("./FontLoader");
-const memory_1 = require("./memory");
-const server_1 = require("./server");
+const loaded = {};
+const loadPromises = {};
 // @needsAudit
 // note(brentvatne): at some point we may want to warn if this is called outside of a managed app.
 /**
@@ -34,12 +34,15 @@ function processFontFamily(fontFamily) {
     if (!isLoaded(fontFamily)) {
         if (__DEV__) {
             if (isLoading(fontFamily)) {
-                console.warn(`You started loading the font "${fontFamily}", but used it before it finished loading. You need to wait for Font.loadAsync to complete before using the font.`);
+                console.error(`You started loading the font "${fontFamily}", but used it before it finished loading. You need to wait for Font.loadAsync to complete before using the font.`);
             }
             else {
-                console.warn(`fontFamily "${fontFamily}" is not a system font and has not been loaded through expo-font.`);
+                console.error(`fontFamily "${fontFamily}" is not a system font and has not been loaded through Font.loadAsync.\n
+- If you intended to use a system font, make sure you typed the name correctly and that it is supported by your device operating system.\n
+- If this is a custom font, be sure to load it with Font.loadAsync.`);
             }
         }
+        return 'System';
     }
     return `ExpoFont-${(0, FontLoader_1.getNativeFontName)(fontFamily)}`;
 }
@@ -51,10 +54,7 @@ function processFontFamily(fontFamily) {
  * @return Returns `true` if the font has fully loaded.
  */
 function isLoaded(fontFamily) {
-    if (expo_modules_core_1.Platform.OS === 'web') {
-        return fontFamily in memory_1.loaded || !!ExpoFontLoader_1.default.isLoaded(fontFamily);
-    }
-    return fontFamily in memory_1.loaded || ExpoFontLoader_1.default.customNativeFonts?.includes(fontFamily);
+    return fontFamily in loaded;
 }
 // @needsAudit
 /**
@@ -64,7 +64,7 @@ function isLoaded(fontFamily) {
  * @returns Returns `true` if the font is still loading.
  */
 function isLoading(fontFamily) {
-    return fontFamily in memory_1.loadPromises;
+    return fontFamily in loadPromises;
 }
 // @needsAudit
 /**
@@ -79,54 +79,43 @@ function isLoading(fontFamily) {
  * @return Returns a promise that fulfils when the font has loaded. Often you may want to wrap the
  * method in a `try/catch/finally` to ensure the app continues if the font fails to load.
  */
-function loadAsync(fontFamilyOrFontMap, source) {
-    // NOTE(EvanBacon): Static render pass on web must be synchronous to collect all fonts.
-    // Because of this, `loadAsync` doesn't use the `async` keyword and deviates from the
-    // standard Expo SDK style guide.
-    const isServer = expo_modules_core_1.Platform.OS === 'web' && typeof window === 'undefined';
+async function loadAsync(fontFamilyOrFontMap, source) {
     if (typeof fontFamilyOrFontMap === 'object') {
         if (source) {
-            return Promise.reject(new expo_modules_core_1.CodedError(`ERR_FONT_API`, `No fontFamily can be used for the provided source: ${source}. The second argument of \`loadAsync()\` can only be used with a \`string\` value as the first argument.`));
+            throw new expo_modules_core_1.CodedError(`ERR_FONT_API`, `No fontFamily can be used for the provided source: ${source}. The second argument of \`loadAsync()\` can only be used with a \`string\` value as the first argument.`);
         }
         const fontMap = fontFamilyOrFontMap;
         const names = Object.keys(fontMap);
-        if (isServer) {
-            names.map((name) => (0, server_1.registerStaticFont)(name, fontMap[name]));
-            return Promise.resolve();
-        }
-        return Promise.all(names.map((name) => loadFontInNamespaceAsync(name, fontMap[name]))).then(() => { });
+        await Promise.all(names.map((name) => loadFontInNamespaceAsync(name, fontMap[name])));
+        return;
     }
-    if (isServer) {
-        (0, server_1.registerStaticFont)(fontFamilyOrFontMap, source);
-        return Promise.resolve();
-    }
-    return loadFontInNamespaceAsync(fontFamilyOrFontMap, source);
+    return await loadFontInNamespaceAsync(fontFamilyOrFontMap, source);
 }
 async function loadFontInNamespaceAsync(fontFamily, source) {
     if (!source) {
         throw new expo_modules_core_1.CodedError(`ERR_FONT_SOURCE`, `Cannot load null or undefined font source: { "${fontFamily}": ${source} }. Expected asset of type \`FontSource\` for fontFamily of name: "${fontFamily}"`);
     }
-    if (memory_1.loaded[fontFamily]) {
+    if (loaded[fontFamily]) {
         return;
     }
-    if (memory_1.loadPromises.hasOwnProperty(fontFamily)) {
-        return memory_1.loadPromises[fontFamily];
+    if (loadPromises.hasOwnProperty(fontFamily)) {
+        return loadPromises[fontFamily];
     }
     // Important: we want all callers that concurrently try to load the same font to await the same
     // promise. If we're here, we haven't created the promise yet. To ensure we create only one
     // promise in the program, we need to create the promise synchronously without yielding the event
     // loop from this point.
     const asset = (0, FontLoader_1.getAssetForSource)(source);
-    memory_1.loadPromises[fontFamily] = (async () => {
+    loadPromises[fontFamily] = (async () => {
         try {
             await (0, FontLoader_1.loadSingleFontAsync)(fontFamily, asset);
-            memory_1.loaded[fontFamily] = true;
+            loaded[fontFamily] = true;
         }
         finally {
-            delete memory_1.loadPromises[fontFamily];
+            delete loadPromises[fontFamily];
         }
     })();
-    await memory_1.loadPromises[fontFamily];
+    await loadPromises[fontFamily];
 }
 // @needsAudit
 /**
@@ -136,11 +125,11 @@ async function unloadAllAsync() {
     if (!ExpoFontLoader_1.default.unloadAllAsync) {
         throw new expo_modules_core_1.UnavailabilityError('expo-font', 'unloadAllAsync');
     }
-    if (Object.keys(memory_1.loadPromises).length) {
-        throw new expo_modules_core_1.CodedError(`ERR_UNLOAD`, `Cannot unload fonts while they're still loading: ${Object.keys(memory_1.loadPromises).join(', ')}`);
+    if (Object.keys(loadPromises).length) {
+        throw new expo_modules_core_1.CodedError(`ERR_UNLOAD`, `Cannot unload fonts while they're still loading: ${Object.keys(loadPromises).join(', ')}`);
     }
-    for (const fontFamily of Object.keys(memory_1.loaded)) {
-        delete memory_1.loaded[fontFamily];
+    for (const fontFamily of Object.keys(loaded)) {
+        delete loaded[fontFamily];
     }
     await ExpoFontLoader_1.default.unloadAllAsync();
 }
@@ -169,11 +158,11 @@ async function unloadAsync(fontFamilyOrFontMap, options) {
     return await unloadFontInNamespaceAsync(fontFamilyOrFontMap, options);
 }
 async function unloadFontInNamespaceAsync(fontFamily, options) {
-    if (!memory_1.loaded[fontFamily]) {
+    if (!loaded[fontFamily]) {
         return;
     }
     else {
-        delete memory_1.loaded[fontFamily];
+        delete loaded[fontFamily];
     }
     // Important: we want all callers that concurrently try to load the same font to await the same
     // promise. If we're here, we haven't created the promise yet. To ensure we create only one

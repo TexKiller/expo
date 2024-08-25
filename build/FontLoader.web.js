@@ -46,18 +46,11 @@ function throwInvalidSourceError(source) {
         type = JSON.stringify(source, null, 2);
     throw new expo_modules_core_1.CodedError(`ERR_FONT_SOURCE`, `Expected font asset of type \`string | FontResource | Asset\` instead got: ${type}`);
 }
-// NOTE(EvanBacon): No async keyword!
-function loadSingleFontAsync(name, input) {
+async function loadSingleFontAsync(name, input) {
     if (typeof input !== 'object' || typeof input.uri !== 'string' || input.downloadAsync) {
         throwInvalidSourceError(input);
     }
-    try {
-        return ExpoFontLoader_1.default.loadAsync(name, input);
-    }
-    catch {
-        // No-op.
-    }
-    return Promise.resolve();
+    await ExpoFontLoader_1.default.loadAsync(name, input);
 }
 function getNativeFontName(name) {
     return name;
