@@ -1,6 +1,8 @@
-import { createRunOncePlugin } from 'expo/config-plugins';
-import { withFontsAndroid } from './withFontsAndroid';
-import { withFontsIos } from './withFontsIos';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const config_plugins_1 = require("expo/config-plugins");
+const withFontsAndroid_1 = require("./withFontsAndroid");
+const withFontsIos_1 = require("./withFontsIos");
 const pkg = require('expo-font/package.json');
 const withFonts = (config, props) => {
     if (!props) {
@@ -8,12 +10,12 @@ const withFonts = (config, props) => {
     }
     const iosFonts = [...(props.fonts ?? []), ...(props.ios?.fonts ?? [])];
     if (iosFonts.length > 0) {
-        config = withFontsIos(config, iosFonts);
+        config = (0, withFontsIos_1.withFontsIos)(config, iosFonts);
     }
     const androidFonts = [...(props.fonts ?? []), ...(props.android?.fonts ?? [])];
     if (androidFonts.length > 0) {
-        config = withFontsAndroid(config, androidFonts);
+        config = (0, withFontsAndroid_1.withFontsAndroid)(config, androidFonts);
     }
     return config;
 };
-export default createRunOncePlugin(withFonts, pkg.name, pkg.version);
+exports.default = (0, config_plugins_1.createRunOncePlugin)(withFonts, pkg.name, pkg.version);
