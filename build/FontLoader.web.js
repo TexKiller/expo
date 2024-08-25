@@ -3,8 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.fontFamilyNeedsScoping = fontFamilyNeedsScoping;
 exports.getAssetForSource = getAssetForSource;
 exports.loadSingleFontAsync = loadSingleFontAsync;
+exports.getNativeFontName = getNativeFontName;
 const expo_asset_1 = require("expo-asset");
 const expo_modules_core_1 = require("expo-modules-core");
 const ExpoFontLoader_1 = __importDefault(require("./ExpoFontLoader"));
@@ -13,22 +15,19 @@ function uriFromFontSource(asset) {
     if (typeof asset === 'string') {
         return asset || null;
     }
-    else if (typeof asset === 'number') {
-        return uriFromFontSource(expo_asset_1.Asset.fromModule(asset));
-    }
-    else if (typeof asset === 'object' && typeof asset.uri === 'number') {
-        return uriFromFontSource(asset.uri);
-    }
     else if (typeof asset === 'object') {
         return asset.uri || asset.localUri || asset.default || null;
+    }
+    else if (typeof asset === 'number') {
+        return uriFromFontSource(expo_asset_1.Asset.fromModule(asset));
     }
     return null;
 }
 function displayFromFontSource(asset) {
-    if (typeof asset === 'object' && 'display' in asset) {
-        return asset.display || Font_types_1.FontDisplay.AUTO;
-    }
-    return Font_types_1.FontDisplay.AUTO;
+    return asset.display || Font_types_1.FontDisplay.AUTO;
+}
+function fontFamilyNeedsScoping(name) {
+    return false;
 }
 function getAssetForSource(source) {
     const uri = uriFromFontSource(source);
@@ -37,7 +36,7 @@ function getAssetForSource(source) {
         throwInvalidSourceError(uri);
     }
     return {
-        uri,
+        uri: uri,
         display,
     };
 }
@@ -59,5 +58,8 @@ function loadSingleFontAsync(name, input) {
         // No-op.
     }
     return Promise.resolve();
+}
+function getNativeFontName(name) {
+    return name;
 }
 //# sourceMappingURL=FontLoader.web.js.map

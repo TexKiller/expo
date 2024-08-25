@@ -3,11 +3,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.fontFamilyNeedsScoping = fontFamilyNeedsScoping;
 exports.getAssetForSource = getAssetForSource;
 exports.loadSingleFontAsync = loadSingleFontAsync;
+exports.getNativeFontName = getNativeFontName;
 const expo_asset_1 = require("expo-asset");
+const expo_constants_1 = __importDefault(require("expo-constants"));
 const expo_modules_core_1 = require("expo-modules-core");
 const ExpoFontLoader_1 = __importDefault(require("./ExpoFontLoader"));
+const isInExpoGo = expo_constants_1.default.appOwnership === 'expo';
+function fontFamilyNeedsScoping(name) {
+    return (isInExpoGo &&
+        expo_modules_core_1.Platform.OS !== 'ios' &&
+        !expo_constants_1.default.systemFonts.includes(name) &&
+        name !== 'System' &&
+        !name.includes(expo_constants_1.default.sessionId));
+}
 function getAssetForSource(source) {
     if (source instanceof expo_asset_1.Asset) {
         return source;
@@ -35,6 +46,14 @@ async function loadSingleFontAsync(name, input) {
     if (!asset.downloaded) {
         throw new expo_modules_core_1.CodedError(`ERR_DOWNLOAD`, `Failed to download asset for font "${name}"`);
     }
-    await ExpoFontLoader_1.default.loadAsync(name, asset.localUri);
+    await ExpoFontLoader_1.default.loadAsync(getNativeFontName(name), asset.localUri);
+}
+function getNativeFontName(name) {
+    if (fontFamilyNeedsScoping(name)) {
+        return `${expo_constants_1.default.sessionId}-${name}`;
+    }
+    else {
+        return name;
+    }
 }
 //# sourceMappingURL=FontLoader.js.map
