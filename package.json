@@ -40,7 +40,6 @@
     "expo-module-scripts": "^3.0.0"
   },
   "peerDependencies": {
-    "expo": "*"
-  },
-  "gitHead": "fa5ecca8251986b9f197cc14074eec0ab6dfb6db"
+    "expo": "^49.0.0"
+  }
 }
