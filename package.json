@@ -1,39 +1,48 @@
 {
-  "name": "@expo/expo",
-  "version": "1.4.0",
-  "private": true,
-  "author": "Expo",
-  "license": "MIT",
+  "name": "expo-font",
+  "version": "12.0.5",
+  "description": "Load fonts at runtime and use them in React Native components.",
+  "main": "build/index.js",
+  "type": "module",
+  "types": "build/index.d.ts",
+  "sideEffects": false,
   "scripts": {
-    "setup:docs": "./scripts/download-dependencies.sh",
-    "setup:native": "./scripts/download-dependencies.sh && ./scripts/setup-react-android.sh",
-    "postinstall": "yarn-deduplicate && yarn workspace @expo/cli prepare && patch-package && node ./tools/bin/expotools.js validate-workspace-dependencies",
-    "lint": "eslint .",
-    "tsc": "echo 'You are trying to run \"tsc\" in the workspace root. Run it from an individual package instead.' && exit 1"
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "expo-module test",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "expo-module": "expo-module"
   },
-  "workspaces": {
-    "packages": [
-      "apps/*",
-      "packages/*",
-      "packages/@expo/*"
-    ]
+  "keywords": [
+    "react-native",
+    "expo",
+    "font"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/expo/expo.git",
+    "directory": "packages/expo-font"
   },
-  "resolutions": {
-    "react-native": "0.75.2",
-    "react": "18.3.1",
-    "@react-navigation/native": "^6.1.6",
-    "@react-navigation/core": "^6.4.9",
-    "**/util": "~0.12.4"
+  "bugs": {
+    "url": "https://github.com/expo/expo/issues"
+  },
+  "author": "650 Industries, Inc.",
+  "license": "MIT",
+  "homepage": "https://docs.expo.dev/versions/latest/sdk/font/",
+  "jest": {
+    "preset": "expo-module-scripts"
   },
   "dependencies": {
-    "eslint": "^8.56.0",
-    "jsc-android": "^250231.0.0",
-    "node-gyp": "^10.0.1",
-    "patch-package": "^8.0.0",
-    "prettier": "^3.1.1",
-    "yarn-deduplicate": "^6.0.2"
+    "fontfaceobserver": "^2.1.0"
   },
-  "volta": {
-    "node": "20.12.2"
+  "devDependencies": {
+    "@testing-library/react-native": "^12.5.2",
+    "expo-module-scripts": "^3.0.0"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*"
   }
 }
